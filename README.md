@@ -13,8 +13,8 @@ This project implements a microservices architecture for a healthcare applicatio
 - **Real-Time Notifications**: Alerts for appointment reminders and health updates.
 
 ## Technologies Used
-- **Frontend**: React.js / Vue.js / Angular
-- **Backend**: Node.js + Express.js / Laravel
+- **Frontend**: React.js 
+- **Backend**: Node.js + Express.js 
 - **Database**: MongoDB Atlas, MySQL
 - **Authentication**: JWT, OAuth
 - **Containerization**: Docker
