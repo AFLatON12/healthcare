@@ -1,7 +1,14 @@
-FROM node:14
-WORKDIR /usr/src/app
-COPY package*.json ./
-RUN npm install
-COPY . .
-EXPOSE 3001
-CMD ["node", "server.js"]
+FROM golang:1.20
+
+WORKDIR /app
+
+COPY go.mod ./
+COPY . ./
+
+RUN go mod download
+
+RUN go build -o main .
+
+EXPOSE 8000
+
+CMD ["./main"]
