@@ -11,31 +11,56 @@ import (
 )
 
 func main() {
+	// Set up logging
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
+	log.Println("🚀 Starting Authentication Service...")
+
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("❌ Error loading .env file")
+		log.Fatal("❌ Error loading .env file:", err)
 	}
+	log.Println("✅ Environment variables loaded")
 
+	// Connect to MongoDB
+	log.Println("📡 Connecting to MongoDB...")
 	db.ConnectMongoDB()
+	log.Println("✅ MongoDB connection established")
+
+	// Setup routes
+	log.Println("🛠️ Setting up routes...")
 	router := routes.SetupRoutes()
+	log.Println("✅ Routes configured")
 
-	// ✅ لف الـ router بميدل وير CORS مظبوط
+	// Setup CORS middleware
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
-		// أو http://127.0.0.1:5500
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		log.Printf("📨 Incoming %s request to %s", r.Method, r.URL.Path)
 
+		// Set CORS headers
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000") // أو أي origin آخر تستخدمه
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Expose-Headers", "Set-Cookie")
+
+		// Handle preflight requests
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
 
-		// ✅ مرر الطلب فعلاً للراوتر
 		router.ServeHTTP(w, r)
 	})
 
-	log.Println("✅ Auth Service running on port:", os.Getenv("PORT"))
-	log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), handler))
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8000" // Default port if not specified
+	}
+
+	serverAddr := ":" + port
+	log.Printf("🌟 Auth Service starting on http://localhost%s", serverAddr)
+
+	if err := http.ListenAndServe(serverAddr, handler); err != nil {
+		log.Fatal("❌ Server failed to start:", err)
+	}
 }

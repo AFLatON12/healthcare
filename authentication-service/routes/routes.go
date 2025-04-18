@@ -16,6 +16,7 @@ func SetupRoutes() *mux.Router {
 	r.HandleFunc("/api/logout", controllers.LogoutHandler).Methods("POST")
 	r.HandleFunc("/api/doctor-zone", middleware.RequireRole("doctor", controllers.DoctorZoneHandler)).Methods("GET")
 	r.HandleFunc("/api/patient-zone", middleware.RequireRole("patient", controllers.PatientZoneHandler)).Methods("GET")
+	r.HandleFunc("/api/admin-zone", middleware.RequireRole("admin", controllers.AdminZoneHandler)).Methods("GET")
 	r.HandleFunc("/api/change-password", middleware.RequireAuth(controllers.ChangePasswordHandler)).Methods("POST")
 
 	return r

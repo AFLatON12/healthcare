@@ -25,7 +25,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{
 			"error": "❌ Invalid input",
 		})
-
 		return
 	}
 
@@ -43,6 +42,21 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{
 			"error": "❌ Invalid email format",
+		})
+		return
+	}
+
+	// ✅ Validate role
+	validRoles := map[string]bool{
+		"admin":   true,
+		"doctor":  true,
+		"patient": true,
+	}
+
+	if !validRoles[user.Role] {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "❌ Invalid role. Must be 'admin', 'doctor', or 'patient'",
 		})
 		return
 	}
@@ -149,20 +163,22 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Set cookie with proper settings
 	http.SetCookie(w, &http.Cookie{
 		Name:     "token",
 		Value:    tokenString,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   false,
+		Secure:   false, // Set to true in production with HTTPS
 		SameSite: http.SameSiteLaxMode,
+		MaxAge:   86400, // 24 hours in seconds
 	})
 
-	w.Header().Set("Content-Type", "application/json") // ⬅️ مهم جدًا هنا
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{
 		"message": "✅ Login successful",
+		"role":    user.Role,
 	})
-
 }
 
 func ProfileHandler(w http.ResponseWriter, r *http.Request) {
@@ -329,5 +345,60 @@ func ChangePasswordHandler(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(map[string]string{
 		"message": "✅ Password changed successfully",
+	})
+}
+
+func AdminZoneHandler(w http.ResponseWriter, r *http.Request) {
+	// ✅ التحقق من أن المستخدم أدمن
+	userID, ok := r.Context().Value("userID").(string)
+	if !ok {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "❌ User ID not found in context",
+		})
+		return
+	}
+
+	collection := db.GetCollection("authdb", "users")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	objID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "❌ Invalid user ID format",
+		})
+		return
+	}
+
+	var user models.User
+	err = collection.FindOne(ctx, bson.M{"_id": objID}).Decode(&user)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "❌ User not found",
+		})
+		return
+	}
+
+	if user.Role != "admin" {
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "❌ Access denied. Admin role required",
+		})
+		return
+	}
+
+	// ✅ إرجاع بيانات منطقة الأدمن
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "✅ Welcome to Admin Zone",
+		"user": map[string]interface{}{
+			"id":    user.ID,
+			"name":  user.Name,
+			"email": user.Email,
+			"role":  user.Role,
+		},
 	})
 }

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -32,11 +33,18 @@ func RequireAuth(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		// ✅ لو حبيت تحط الـ user info في context، تقدر تضيفه هنا بعدين
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			http.Error(w, "❌ Invalid claims", http.StatusUnauthorized)
+			return
+		}
 
-		next.ServeHTTP(w, r)
+		userID := claims["user_id"].(string)
+		ctx := context.WithValue(r.Context(), "userID", userID)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
+
 func RequireRole(role string, next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("token")
@@ -67,7 +75,8 @@ func RequireRole(role string, next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		// ✅ السماح بالدخول
-		next.ServeHTTP(w, r)
+		userID := claims["user_id"].(string)
+		ctx := context.WithValue(r.Context(), "userID", userID)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
