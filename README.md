@@ -1,66 +1,52 @@
-# Distributed Healthcare Management System – Phase 1
+# 🏥 Distributed Healthcare Management System
 
-## 📌 Project Overview
-
-This project is developed as part of the **Distributed Information Systems (CSE474)** course at Alalamein University. The aim is to build a **Distributed Healthcare Management System** using microservices architecture, Docker, and modern web technologies.
+This is a microservices-based healthcare system developed for the **CSE474 - Distributed Information Systems** course at Alalamein University. The project emphasizes scalability, security, and modular design using **Docker**, **Kubernetes**, and **Node.js** microservices.
 
 ---
 
-## ✅ Phase 1: Development Environment & Microservices Setup
+## 🧩 Microservices Overview
 
-### 🎯 Objective
+### 1. 🔐 Auth Service
+Handles all authentication and authorization logic.
 
-The goal of Phase 1 was to prepare the development environment and set up the core microservices architecture.
+- **JWT-based** login & session management
+- **OAuth** login support (Google, Facebook)
+- **Multi-Factor Authentication (MFA)** for added security
+- **Role-Based Access Control (RBAC)**: Admin, Doctor, Patient
 
----
+### 2. 🩺 Management Service
+Responsible for core healthcare logic and data management.
 
-### 🛠️ Tasks Completed
+- CRUD for **Patients**, **Doctors**, and **Medical Staff**
+- Doctor availability and **Appointment Scheduling**
+- **Digital Prescription** generation
+- Real-time **medical record synchronization**
 
-1. **Installed Required Tools**
-   - Node.js
-   - Laravel
-   - MongoDB Atlas / MySQL
-   - Docker
-   - Kubernetes
+### 3. 💳 Billing Service
+Manages hospital billing, insurance, and financial reports.
 
-2. **Defined Microservices Structure**
-   - **Auth Service**: Handles user authentication using JWT and OAuth.
-   - **Healthcare Service Management**: Manages appointments, services, and related data.
-   - **Transaction Service**: Manages appointments booking, billing, and payment logic.
-
-3. **Initialized Projects**
-   - **Backend**: Set up using Laravel or Node.js + Express.js.
-   - **Frontend**: Initialized using React.js / Vue.js / Angular (to be expanded in later phases).
-
-4. **Docker Containerization**
-   - Created `Dockerfile` for each microservice.
-   - Configured `docker-compose.yml` to orchestrate multi-container setup.
-
-5. **Tested Docker Containers**
-   - Verified individual containers run correctly.
-   - Ensured basic communication between services.
+- Secure payment gateway integration (Stripe/PayPal)
+- Blockchain-based **insurance claim validation**
+- **Invoice generation** and billing reports
 
 ---
 
-### ⚙️ Technologies Used
+## 🚀 Technologies Used
 
-- **Backend**: Node.js + Express.js / Laravel
-- **Database**: MongoDB Atlas / MySQL
-- **Containerization**: Docker & Docker Compose
-- **Orchestration**: Kubernetes (initial setup)
-
----
-
-
-
-## 🚧 Next Phase
-
-In the next phase, we will implement core business logic, database integration, and inter-service communication using APIs or messaging queues.
+| Category        | Tools/Technologies                        |
+|-----------------|-------------------------------------------|
+| Frontend        | React.js / Vue.js / Angular               |
+| Backend         | Node.js + Express.js                      |
+| Database        | MongoDB Atlas, Google Cloud Spanner       |
+| Authentication  | JWT, OAuth, MFA                           |
+| DevOps          | Docker, Docker Compose, Kubernetes        |
+| Serverless      | AWS Lambda, Google Cloud Functions        |
+| Caching         | Redis (planned/optional)                  |
+| Blockchain      | For insurance claim verification          |
 
 ---
 
-## 📅 Course Details
+## 🧱 System Architecture
 
-- **Course**: Distributed Information Systems (CSE474)
-- **University**: Alalamein University
-- **Year**: 2025
+Each service runs in its own Docker container. Communication is handled via **REST APIs**, secured through JWT and role validation.
+
