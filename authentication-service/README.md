@@ -1,66 +1,235 @@
-# Distributed Healthcare Management System – Phase 1
+# Healthcare Authentication Service
 
-## 📌 Project Overview
+## Overview
+The Authentication Service is a microservice responsible for managing user authentication and authorization in the healthcare system. It provides secure user registration, login, and role-based access control (RBAC) for different user types (admin, doctor, patient).
 
-This project is developed as part of the **Distributed Information Systems (CSE474)** course at Alalamein University. The aim is to build a **Distributed Healthcare Management System** using microservices architecture, Docker, and modern web technologies.
+## Features
 
----
+### 1. User Management
+- User registration with role assignment
+- Secure login with JWT authentication
+- Password hashing using bcrypt
+- User profile management
+- Password change functionality
 
-## ✅ Phase 1: Development Environment & Microservices Setup
+### 2. Role-Based Access Control (RBAC)
+- Three distinct roles:
+  - Admin: Full system access
+  - Doctor: Access to doctor-specific features
+  - Patient: Access to patient-specific features
+- Role-specific endpoints and middleware protection
 
-### 🎯 Objective
+### 3. Security Features
+- JWT (JSON Web Tokens) for stateless authentication
+- Secure password hashing with bcrypt
+- HTTP-only cookies for token storage
+- CORS protection
+- Input validation and sanitization
+- MongoDB injection protection
 
-The goal of Phase 1 was to prepare the development environment and set up the core microservices architecture.
+## Technical Stack
 
----
+### Backend
+- **Language**: Go (Golang)
+- **Framework**: Standard `net/http` package
+- **Router**: Gorilla Mux
+- **Database**: MongoDB
+- **Authentication**: JWT (github.com/golang-jwt/jwt/v4)
+- **Password Hashing**: bcrypt (golang.org/x/crypto/bcrypt)
 
-### 🛠️ Tasks Completed
+### Development Tools
+- **API Testing**: Postman
+- **Containerization**: Docker
+- **Version Control**: Git
+- **Environment Management**: godotenv
 
-1. **Installed Required Tools**
-   - Node.js
-   - Laravel
-   - MongoDB Atlas / MySQL
-   - Docker
-   - Kubernetes
+## API Endpoints
 
-2. **Defined Microservices Structure**
-   - **Auth Service**: Handles user authentication using JWT and OAuth.
-   - **Healthcare Service Management**: Manages appointments, services, and related data.
-   - **Transaction Service**: Manages appointments booking, billing, and payment logic.
+### Authentication
+1. **Register User**
+   ```
+   POST /api/register
+   Content-Type: application/json
+   
+   {
+       "name": "User Name",
+       "email": "user@example.com",
+       "password": "secure-password",
+       "role": "admin|doctor|patient"
+   }
+   ```
 
-3. **Initialized Projects**
-   - **Backend**: Set up using Laravel or Node.js + Express.js.
-   - **Frontend**: Initialized using React.js / Vue.js / Angular (to be expanded in later phases).
+2. **Login**
+   ```
+   POST /api/login
+   Content-Type: application/json
+   
+   {
+       "email": "user@example.com",
+       "password": "secure-password"
+   }
+   ```
 
-4. **Docker Containerization**
-   - Created `Dockerfile` for each microservice.
-   - Configured `docker-compose.yml` to orchestrate multi-container setup.
+3. **Logout**
+   ```
+   POST /api/logout
+   ```
 
-5. **Tested Docker Containers**
-   - Verified individual containers run correctly.
-   - Ensured basic communication between services.
+### User Profile
+1. **Get Profile**
+   ```
+   GET /api/profile
+   ```
 
----
+2. **Change Password**
+   ```
+   POST /api/change-password
+   Content-Type: application/json
+   
+   {
+       "current_password": "old-password",
+       "new_password": "new-password"
+   }
+   ```
 
-### ⚙️ Technologies Used
+### Role-Specific Zones
+1. **Admin Zone**
+   ```
+   GET /api/admin-zone
+   ```
 
-- **Backend**: Node.js + Express.js / Laravel
-- **Database**: MongoDB Atlas / MySQL
-- **Containerization**: Docker & Docker Compose
-- **Orchestration**: Kubernetes (initial setup)
+2. **Doctor Zone**
+   ```
+   GET /api/doctor-zone
+   ```
 
----
+3. **Patient Zone**
+   ```
+   GET /api/patient-zone
+   ```
 
+## Security Implementation
 
+### 1. JWT Authentication
+- Token-based authentication using JWT
+- Tokens contain:
+  - User ID
+  - Email
+  - Role
+  - Expiration time
+- Tokens are signed with a secret key
+- 24-hour token expiration
 
-## 🚧 Next Phase
+### 2. Password Security
+- Passwords are hashed using bcrypt
+- Salt is automatically generated
+- Minimum password requirements enforced
+- Secure password change mechanism
 
-In the next phase, we will implement core business logic, database integration, and inter-service communication using APIs or messaging queues.
+### 3. CORS Protection
+- Configurable CORS headers
+- Origin validation
+- Credentials support
+- Preflight request handling
 
----
+### 4. Middleware Security
+- Authentication middleware
+- Role-based access middleware
+- Request validation
+- Error handling
 
-## 📅 Course Details
+## Database Schema
 
-- **Course**: Distributed Information Systems (CSE474)
-- **University**: Alalamein University
-- **Year**: 2025
+### User Collection
+```json
+{
+    "_id": "ObjectId",
+    "name": "string",
+    "email": "string",
+    "password": "string (hashed)",
+    "role": "string (admin|doctor|patient)"
+}
+```
+
+## Environment Variables
+```
+PORT=8000
+MONGODB_URI=mongodb+srv://...
+DB_NAME=authdb
+JWT_SECRET=your-secret-key
+```
+
+## Setup and Installation
+
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/ismail-yasser/healthcare.git
+   cd healthcare/authentication-service
+   ```
+
+2. **Install Dependencies**
+   ```bash
+   go mod download
+   ```
+
+3. **Configure Environment**
+   - Copy `.env.example` to `.env`
+   - Update environment variables
+
+4. **Run the Service**
+   ```bash
+   go run main.go
+   ```
+
+## Docker Deployment
+```bash
+docker build -t auth-service .
+docker run -p 8000:8000 auth-service
+```
+
+## Best Practices Implemented
+
+1. **Code Organization**
+   - Clean architecture
+   - Separation of concerns
+   - Modular design
+
+2. **Error Handling**
+   - Consistent error responses
+   - Detailed error messages
+   - Proper HTTP status codes
+
+3. **Security**
+   - Input validation
+   - SQL injection prevention
+   - XSS protection
+   - CSRF protection
+
+4. **Performance**
+   - Connection pooling
+   - Request timeout handling
+   - Efficient database queries
+
+## Testing
+- Postman collection included
+- API endpoint testing
+- Authentication flow testing
+- Role-based access testing
+
+## Future Improvements
+1. Implement refresh tokens
+2. Add rate limiting
+3. Implement 2FA
+4. Add audit logging
+5. Implement session management
+6. Add API documentation (Swagger)
+
+## Contributing
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+This project is licensed under the MIT License. 
