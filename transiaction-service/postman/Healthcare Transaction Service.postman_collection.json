@@ -1,0 +1,678 @@
+{
+    "info": {
+        "_postman_id": "your-collection-id",
+        "name": "Healthcare Transaction Service ver2",
+        "description": "# Healthcare Transaction Service API Documentation\n\n## Overview\nThis API service handles all financial transactions in the healthcare system, including payments, insurance claims, and invoices.\n\n## Environment Setup\nCreate a new environment with these variables:\n- `base_url`: http://localhost:8080\n- `payment_id`: (auto-set after creating payment)\n- `claim_id`: (auto-set after creating claim)\n- `invoice_id`: (auto-set after creating invoice)\n- `patient_id`: Your patient ID (e.g., PAT123456)\n\n## Status Workflows\n\n### Payment Status Flow\n```\npending → processing → completed\n       ↘ cancelled\n processing → failed → pending\n```\n\n### Claim Status Flow\n```\nsubmitted → under_review → approved → paid\n         ↘ rejected\nunder_review → rejected\n```\n\n### Invoice Status Flow\n```\ndraft → issued → paid\n     ↘ cancelled\nissued → overdue → paid/cancelled\n```\n",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Health Check",
+            "description": "Basic health check endpoint to verify service status.",
+            "item": [
+                {
+                    "name": "Get Health Status",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/health",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "health"
+                            ]
+                        },
+                        "description": "Returns 200 OK if service is running properly."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Payments",
+            "description": "Payment processing endpoints for handling medical payments.",
+            "item": [
+                {
+                    "name": "Create Payment",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "var jsonData = JSON.parse(responseBody);",
+                                    "if (jsonData.id) {",
+                                    "    pm.environment.set(\"payment_id\", jsonData.id);",
+                                    "    console.log(\"Payment ID saved: \" + jsonData.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"patient_id\": \"{{patient_id}}\",\n    \"amount\": 500.00,\n    \"currency\": \"USD\",\n    \"method\": \"credit_card\",\n    \"description\": \"Initial consultation payment\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/payments",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "payments"
+                            ]
+                        },
+                        "description": "Creates a new payment with initial pending status."
+                    }
+                },
+                {
+                    "name": "Update Payment (To Processing)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"status\": \"processing\",\n    \"amount\": 500.00,\n    \"method\": \"credit_card\",\n    \"description\": \"Payment is being processed\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/payments/{{payment_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "payments",
+                                "{{payment_id}}"
+                            ]
+                        },
+                        "description": "Updates payment from pending to processing status."
+                    }
+                },
+                {
+                    "name": "Update Payment (To Completed)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"status\": \"completed\",\n    \"amount\": 500.00,\n    \"method\": \"credit_card\",\n    \"description\": \"Payment completed successfully\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/payments/{{payment_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "payments",
+                                "{{payment_id}}"
+                            ]
+                        },
+                        "description": "Marks payment as completed (only from processing status)."
+                    }
+                },
+                {
+                    "name": "Update Payment (To Failed)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"status\": \"failed\",\n    \"amount\": 500.00,\n    \"method\": \"credit_card\",\n    \"description\": \"Payment failed - insufficient funds\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/payments/{{payment_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "payments",
+                                "{{payment_id}}"
+                            ]
+                        },
+                        "description": "Marks payment as failed (only from processing status)."
+                    }
+                },
+                {
+                    "name": "Update Payment (To Cancelled)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"status\": \"cancelled\",\n    \"amount\": 500.00,\n    \"method\": \"credit_card\",\n    \"description\": \"Payment cancelled by user\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/payments/{{payment_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "payments",
+                                "{{payment_id}}"
+                            ]
+                        },
+                        "description": "Cancels payment (from pending or processing status)."
+                    }
+                },
+                {
+                    "name": "Get Payment",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/api/payments/{{payment_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "payments",
+                                "{{payment_id}}"
+                            ]
+                        },
+                        "description": "Retrieves payment details by ID."
+                    }
+                },
+                {
+                    "name": "List Payments",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/api/payments?patient_id={{patient_id}}&status=pending",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "payments"
+                            ],
+                            "query": [
+                                {
+                                    "key": "patient_id",
+                                    "value": "{{patient_id}}"
+                                },
+                                {
+                                    "key": "status",
+                                    "value": "pending"
+                                }
+                            ]
+                        },
+                        "description": "Lists payments with optional filters for patient_id and status."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Claims",
+            "description": "Insurance claim management endpoints.",
+            "item": [
+                {
+                    "name": "Create Claim",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "var jsonData = JSON.parse(responseBody);",
+                                    "if (jsonData.id) {",
+                                    "    pm.environment.set(\"claim_id\", jsonData.id);",
+                                    "    console.log(\"Claim ID saved: \" + jsonData.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"patient_id\": \"{{patient_id}}\",\n    \"insurance_id\": \"INS789\",\n    \"amount\": 500.00,\n    \"description\": \"Claim for consultation\",\n    \"documentation_url\": \"https://example.com/docs/claim123.pdf\",\n    \"service_date\": \"{{$isoTimestamp}}\",\n    \"submission_date\": \"{{$isoTimestamp}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/claims",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "claims"
+                            ]
+                        },
+                        "description": "Creates a new claim with submitted status."
+                    }
+                },
+                {
+                    "name": "Update Claim (To Under Review)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"status\": \"under_review\",\n    \"amount\": 500.00,\n    \"description\": \"Claim under review by insurance\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/claims/{{claim_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "claims",
+                                "{{claim_id}}"
+                            ]
+                        },
+                        "description": "Updates claim from submitted to under_review status."
+                    }
+                },
+                {
+                    "name": "Update Claim (To Approved)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"status\": \"approved\",\n    \"amount\": 500.00,\n    \"description\": \"Claim approved by insurance\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/claims/{{claim_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "claims",
+                                "{{claim_id}}"
+                            ]
+                        },
+                        "description": "Approves claim (only from under_review status)."
+                    }
+                },
+                {
+                    "name": "Update Claim (To Paid)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"status\": \"paid\",\n    \"amount\": 500.00,\n    \"description\": \"Claim amount paid by insurance\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/claims/{{claim_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "claims",
+                                "{{claim_id}}"
+                            ]
+                        },
+                        "description": "Marks claim as paid (only from approved status)."
+                    }
+                },
+                {
+                    "name": "Reject Claim",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"reason\": \"Missing documentation\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/claims/{{claim_id}}/reject",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "claims",
+                                "{{claim_id}}",
+                                "reject"
+                            ]
+                        },
+                        "description": "Rejects a claim with a reason (from submitted or under_review status)."
+                    }
+                },
+                {
+                    "name": "Get Claim",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/api/claims/{{claim_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "claims",
+                                "{{claim_id}}"
+                            ]
+                        },
+                        "description": "Retrieves claim details by ID."
+                    }
+                },
+                {
+                    "name": "List Claims",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/api/claims?patient_id={{patient_id}}&status=under_review",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "claims"
+                            ],
+                            "query": [
+                                {
+                                    "key": "patient_id",
+                                    "value": "{{patient_id}}"
+                                },
+                                {
+                                    "key": "status",
+                                    "value": "under_review"
+                                }
+                            ]
+                        },
+                        "description": "Lists claims with optional filters for patient_id and status."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Invoices",
+            "description": "Invoice management endpoints for billing.",
+            "item": [
+                {
+                    "name": "Create Invoice",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "var jsonData = JSON.parse(responseBody);",
+                                    "if (jsonData.id) {",
+                                    "    pm.environment.set(\"invoice_id\", jsonData.id);",
+                                    "    console.log(\"Invoice ID saved: \" + jsonData.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"patient_id\": \"{{patient_id}}\",\n    \"amount\": 200.00,\n    \"due_date\": \"{{$isoTimestamp}}\",\n    \"items\": [\n        {\n            \"description\": \"Consultation\",\n            \"amount\": 150.00,\n            \"quantity\": 1\n        },\n        {\n            \"description\": \"Lab test\",\n            \"amount\": 50.00,\n            \"quantity\": 1\n        }\n    ],\n    \"description\": \"Invoice for medical services\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/invoices",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "invoices"
+                            ]
+                        },
+                        "description": "Creates a new invoice with draft status."
+                    }
+                },
+                {
+                    "name": "Update Invoice (To Issued)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"status\": \"issued\",\n    \"amount\": 200.00,\n    \"description\": \"Invoice issued to patient\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/invoices/{{invoice_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "invoices",
+                                "{{invoice_id}}"
+                            ]
+                        },
+                        "description": "Updates invoice from draft to issued status."
+                    }
+                },
+                {
+                    "name": "Update Invoice (To Paid)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"status\": \"paid\",\n    \"amount\": 200.00,\n    \"description\": \"Invoice paid in full\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/invoices/{{invoice_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "invoices",
+                                "{{invoice_id}}"
+                            ]
+                        },
+                        "description": "Marks invoice as paid (from issued or overdue status)."
+                    }
+                },
+                {
+                    "name": "Update Invoice (To Overdue)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"status\": \"overdue\",\n    \"amount\": 200.00,\n    \"description\": \"Invoice is past due date\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/invoices/{{invoice_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "invoices",
+                                "{{invoice_id}}"
+                            ]
+                        },
+                        "description": "Marks invoice as overdue (only from issued status)."
+                    }
+                },
+                {
+                    "name": "Update Invoice (To Cancelled)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"status\": \"cancelled\",\n    \"amount\": 200.00,\n    \"description\": \"Invoice cancelled\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/invoices/{{invoice_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "invoices",
+                                "{{invoice_id}}"
+                            ]
+                        },
+                        "description": "Cancels invoice (from draft or overdue status)."
+                    }
+                },
+                {
+                    "name": "Process Partial Payment",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"amount\": 100.00\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/invoices/{{invoice_id}}/partial-payment",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "invoices",
+                                "{{invoice_id}}",
+                                "partial-payment"
+                            ]
+                        },
+                        "description": "Processes a partial payment for an invoice."
+                    }
+                },
+                {
+                    "name": "Get Invoice",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/api/invoices/{{invoice_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "invoices",
+                                "{{invoice_id}}"
+                            ]
+                        },
+                        "description": "Retrieves invoice details by ID."
+                    }
+                },
+                {
+                    "name": "List Invoices",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{base_url}}/api/invoices?patient_id={{patient_id}}&status=issued",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "invoices"
+                            ],
+                            "query": [
+                                {
+                                    "key": "patient_id",
+                                    "value": "{{patient_id}}"
+                                },
+                                {
+                                    "key": "status",
+                                    "value": "issued"
+                                }
+                            ]
+                        },
+                        "description": "Lists invoices with optional filters for patient_id and status."
+                    }
+                }
+            ]
+        }
+    ]
+}
