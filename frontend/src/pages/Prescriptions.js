@@ -1,69 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/Prescriptions.css';
+import { prescriptionAPI } from '../services/api';
 
 const Prescriptions = () => {
+    const [prescriptions, setPrescriptions] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [activeTab, setActiveTab] = useState('active');
     const [isNewPrescriptionModalOpen, setIsNewPrescriptionModalOpen] = useState(false);
     const [selectedPrescription, setSelectedPrescription] = useState(null);
 
-    // Mock data for demonstration
-    const activePrescriptions = [
-        {
-            id: 1,
-            doctorName: 'Dr. Sarah Wilson',
-            date: '2024-03-15',
-            medications: [
-                {
-                    name: 'Amoxicillin',
-                    dosage: '500mg',
-                    frequency: '3 times daily',
-                    duration: '7 days',
-                    instructions: 'Take after meals'
-                },
-                {
-                    name: 'Ibuprofen',
-                    dosage: '400mg',
-                    frequency: 'As needed',
-                    duration: '5 days',
-                    instructions: 'Take with food'
-                }
-            ],
-            notes: 'Complete the full course of antibiotics even if symptoms improve.'
-        },
-        {
-            id: 2,
-            doctorName: 'Dr. Michael Brown',
-            date: '2024-03-10',
-            medications: [
-                {
-                    name: 'Paracetamol',
-                    dosage: '650mg',
-                    frequency: 'Every 6 hours',
-                    duration: '3 days',
-                    instructions: 'Take for fever or pain'
-                }
-            ],
-            notes: 'Stay hydrated and rest well.'
-        }
-    ];
+    useEffect(() => {
+        fetchPrescriptions();
+    }, []);
 
-    const pastPrescriptions = [
-        {
-            id: 3,
-            doctorName: 'Dr. Emily Davis',
-            date: '2024-02-20',
-            medications: [
-                {
-                    name: 'Cetirizine',
-                    dosage: '10mg',
-                    frequency: 'Once daily',
-                    duration: '14 days',
-                    instructions: 'Take at night'
-                }
-            ],
-            notes: 'For seasonal allergies'
+    const fetchPrescriptions = async () => {
+        try {
+            const data = await prescriptionAPI.getPrescriptions();
+            setPrescriptions(data);
+        } catch (err) {
+            setError('Failed to fetch prescriptions');
+            console.error('Prescriptions fetch error:', err);
+        } finally {
+            setLoading(false);
         }
-    ];
+    };
+
+    const handleViewDetails = (prescription) => {
+        setSelectedPrescription(prescription);
+    };
+
+    const handleCloseDetails = () => {
+        setSelectedPrescription(null);
+    };
 
     const handleNewPrescription = (e) => {
         e.preventDefault();
@@ -72,10 +41,19 @@ const Prescriptions = () => {
         setIsNewPrescriptionModalOpen(false);
     };
 
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div className="text-red-500">{error}</div>;
+    }
+
     return (
-        <div className="prescriptions-page">
-            <div className="prescriptions-header">
-                <h1>Prescriptions</h1>
+        <div className="space-y-6">
+            {/* Header */}
+            <div className="flex justify-between items-center">
+                <h1 className="text-2xl font-bold text-gray-900">Prescriptions</h1>
                 <button
                     className="new-prescription-btn"
                     onClick={() => setIsNewPrescriptionModalOpen(true)}
@@ -84,93 +62,109 @@ const Prescriptions = () => {
                 </button>
             </div>
 
-            <div className="prescriptions-tabs">
-                <button
-                    className={`tab-btn ${activeTab === 'active' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('active')}
-                >
-                    Active
-                </button>
-                <button
-                    className={`tab-btn ${activeTab === 'past' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('past')}
-                >
-                    Past
-                </button>
-            </div>
-
-            <div className="prescriptions-list">
-                {(activeTab === 'active' ? activePrescriptions : pastPrescriptions).map(prescription => (
-                    <div
-                        key={prescription.id}
-                        className="prescription-card"
-                        onClick={() => setSelectedPrescription(prescription)}
-                    >
-                        <div className="prescription-header">
-                            <div className="prescription-info">
-                                <h3>{prescription.doctorName}</h3>
-                                <p className="prescription-date">Prescribed on {prescription.date}</p>
+            {/* Prescriptions List */}
+            <div className="bg-white shadow rounded-lg divide-y">
+                {prescriptions.length > 0 ? (
+                    prescriptions.map((prescription) => (
+                        <div
+                            key={prescription.id}
+                            className="p-6 hover:bg-gray-50 transition-colors"
+                        >
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <h3 className="text-lg font-medium text-gray-900">
+                                        Prescription #{prescription.id}
+                                    </h3>
+                                    <p className="mt-1 text-gray-500">
+                                        Dr. {prescription.doctorName}
+                                    </p>
+                                    <p className="mt-1 text-gray-500">
+                                        {new Date(prescription.date).toLocaleDateString()}
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => handleViewDetails(prescription)}
+                                    className="text-blue-500 hover:text-blue-600"
+                                >
+                                    View Details
+                                </button>
                             </div>
-                            <button className="view-details-btn">View Details</button>
                         </div>
-                        <div className="medications-preview">
-                            {prescription.medications.map((med, index) => (
-                                <span key={index} className="medication-tag">
-                                    {med.name} ({med.dosage})
-                                </span>
-                            ))}
-                        </div>
+                    ))
+                ) : (
+                    <div className="p-6 text-center text-gray-500">
+                        No prescriptions found
                     </div>
-                ))}
+                )}
             </div>
 
+            {/* Prescription Details Modal */}
             {selectedPrescription && (
-                <div className="modal-overlay">
-                    <div className="prescription-modal">
-                        <div className="modal-header">
-                            <h2>Prescription Details</h2>
+                <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-lg max-w-2xl w-full p-6">
+                        <div className="flex justify-between items-start mb-4">
+                            <h2 className="text-xl font-bold text-gray-900">
+                                Prescription Details
+                            </h2>
                             <button
-                                className="close-btn"
-                                onClick={() => setSelectedPrescription(null)}
+                                onClick={handleCloseDetails}
+                                className="text-gray-400 hover:text-gray-500"
                             >
                                 ×
                             </button>
                         </div>
-                        <div className="prescription-details">
-                            <div className="detail-row">
-                                <span className="label">Doctor:</span>
-                                <span className="value">{selectedPrescription.doctorName}</span>
+
+                        <div className="space-y-4">
+                            <div>
+                                <h3 className="text-sm font-medium text-gray-500">Doctor</h3>
+                                <p className="mt-1 text-gray-900">
+                                    Dr. {selectedPrescription.doctorName}
+                                </p>
                             </div>
-                            <div className="detail-row">
-                                <span className="label">Date:</span>
-                                <span className="value">{selectedPrescription.date}</span>
+
+                            <div>
+                                <h3 className="text-sm font-medium text-gray-500">Date</h3>
+                                <p className="mt-1 text-gray-900">
+                                    {new Date(selectedPrescription.date).toLocaleDateString()}
+                                </p>
                             </div>
-                            <div className="medications-list">
-                                <h3>Medications</h3>
-                                {selectedPrescription.medications.map((med, index) => (
-                                    <div key={index} className="medication-item">
-                                        <h4>{med.name}</h4>
-                                        <div className="medication-details">
-                                            <p><strong>Dosage:</strong> {med.dosage}</p>
-                                            <p><strong>Frequency:</strong> {med.frequency}</p>
-                                            <p><strong>Duration:</strong> {med.duration}</p>
-                                            <p><strong>Instructions:</strong> {med.instructions}</p>
+
+                            <div>
+                                <h3 className="text-sm font-medium text-gray-500">Medications</h3>
+                                <div className="mt-2 space-y-2">
+                                    {selectedPrescription.medications.map((medication, index) => (
+                                        <div
+                                            key={index}
+                                            className="bg-gray-50 p-3 rounded-md"
+                                        >
+                                            <p className="font-medium text-gray-900">
+                                                {medication.name}
+                                            </p>
+                                            <p className="text-sm text-gray-500">
+                                                Dosage: {medication.dosage}
+                                            </p>
+                                            <p className="text-sm text-gray-500">
+                                                Frequency: {medication.frequency}
+                                            </p>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
+
                             {selectedPrescription.notes && (
-                                <div className="prescription-notes">
-                                    <h3>Notes</h3>
-                                    <p>{selectedPrescription.notes}</p>
+                                <div>
+                                    <h3 className="text-sm font-medium text-gray-500">Notes</h3>
+                                    <p className="mt-1 text-gray-900">
+                                        {selectedPrescription.notes}
+                                    </p>
                                 </div>
                             )}
                         </div>
-                        <div className="modal-actions">
-                            <button className="print-btn">Print Prescription</button>
+
+                        <div className="mt-6 flex justify-end">
                             <button
-                                className="close-btn"
-                                onClick={() => setSelectedPrescription(null)}
+                                onClick={handleCloseDetails}
+                                className="bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200"
                             >
                                 Close
                             </button>

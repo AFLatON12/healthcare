@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { authAPI } from '../../services/api';
+import { authService } from '../../services/api';
 import './SignupPage.css';
 
 const SignupPage = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        name: '',
+        first_name: '',
+        last_name: '',
         email: '',
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        dob: '',
+        phone_number: '',
+        address: ''
     });
     const [error, setError] = useState('');
 
@@ -31,12 +35,23 @@ const SignupPage = () => {
         }
 
         try {
-            const response = await authAPI.signup(formData);
-            localStorage.setItem('token', response.data.token);
-            localStorage.setItem('role', 'patient');
+            // Create registration data without confirmPassword
+            const registrationData = {
+                first_name: formData.first_name,
+                last_name: formData.last_name,
+                email: formData.email,
+                password: formData.password,
+                dob: formData.dob,
+                phone_number: formData.phone_number,
+                address: formData.address
+            };
+
+            const response = await authService.register(registrationData);
+            localStorage.setItem('token', response.token);
+            localStorage.setItem('role', response.role);
             navigate('/patient/dashboard');
         } catch (err) {
-            setError(err.response?.data?.message || 'An error occurred during signup');
+            setError(err.response?.data?.message || 'Registration failed. Please try again.');
         }
     };
 
@@ -52,13 +67,25 @@ const SignupPage = () => {
 
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
-                        <label>Full Name</label>
+                        <label>First Name</label>
                         <input
                             type="text"
-                            name="name"
-                            value={formData.name}
+                            name="first_name"
+                            value={formData.first_name}
                             onChange={handleChange}
-                            placeholder="Enter your full name"
+                            placeholder="Enter your first name"
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label>Last Name</label>
+                        <input
+                            type="text"
+                            name="last_name"
+                            value={formData.last_name}
+                            onChange={handleChange}
+                            placeholder="Enter your last name"
                             required
                         />
                     </div>
@@ -76,6 +103,40 @@ const SignupPage = () => {
                     </div>
 
                     <div className="form-group">
+                        <label>Date of Birth</label>
+                        <input
+                            type="date"
+                            name="dob"
+                            value={formData.dob}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label>Phone Number</label>
+                        <input
+                            type="tel"
+                            name="phone_number"
+                            value={formData.phone_number}
+                            onChange={handleChange}
+                            placeholder="Enter your phone number"
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label>Address</label>
+                        <textarea
+                            name="address"
+                            value={formData.address}
+                            onChange={handleChange}
+                            placeholder="Enter your address"
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
                         <label>Password</label>
                         <input
                             type="password"
@@ -84,6 +145,7 @@ const SignupPage = () => {
                             onChange={handleChange}
                             placeholder="Create a password"
                             required
+                            minLength="8"
                         />
                     </div>
 
@@ -96,6 +158,7 @@ const SignupPage = () => {
                             onChange={handleChange}
                             placeholder="Confirm your password"
                             required
+                            minLength="8"
                         />
                     </div>
 

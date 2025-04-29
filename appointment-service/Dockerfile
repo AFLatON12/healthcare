@@ -36,9 +36,6 @@ WORKDIR /app
 # Copy the binary from builder
 COPY --from=builder /app/appointmentservice .
 
-# Copy any required configurations
-COPY --from=builder /app/config ./config
-
 # Set ownership
 RUN chown -R appuser:appuser /app
 
@@ -46,9 +43,9 @@ RUN chown -R appuser:appuser /app
 USER appuser
 
 # Environment variables
-ENV PORT=8080
+ENV PORT=3000
 ENV GIN_MODE=release
-ENV MONGODB_URI="mongodb+srv://ismailyasser:Z1x2c312@cluster1.46bw0ws.mongodb.net/?retryWrites=true&w=majority&appName=Cluster1"
+ENV MONGODB_URI="mongodb://mongodb:27017/healthcare"
 ENV DB_NAME="appointment_management_db"
 
 # Expose port

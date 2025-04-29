@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { authAPI } from '../../services/api';
+import { authService } from '../../services/api';
 import './LoginPage.css';
 
 const LoginPage = () => {
@@ -24,10 +24,10 @@ const LoginPage = () => {
         setError('');
 
         try {
-            const response = await authAPI.login(formData);
-            localStorage.setItem('token', response.data.token);
-            localStorage.setItem('role', response.data.role);
-            navigate(response.data.role === 'doctor' ? '/doctor/dashboard' : '/patient/dashboard');
+            const response = await authService.login(formData);
+            localStorage.setItem('token', response.token);
+            localStorage.setItem('role', response.role);
+            navigate(response.role === 'doctor' ? '/doctor/dashboard' : '/patient/dashboard');
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed. Please try again.');
         }

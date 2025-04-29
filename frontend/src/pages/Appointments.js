@@ -1,198 +1,168 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { appointmentService } from '../services/api';
 import '../styles/Appointments.css';
 
 const Appointments = () => {
+    const [appointments, setAppointments] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [filter, setFilter] = useState('all'); // all, upcoming, past
     const [activeTab, setActiveTab] = useState('upcoming');
     const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState('');
     const [selectedTime, setSelectedTime] = useState('');
     const [selectedDoctor, setSelectedDoctor] = useState('');
 
-    // Mock data for demonstration
-    const upcomingAppointments = [
-        {
-            id: 1,
-            doctorName: 'Dr. Sarah Wilson',
-            patientName: 'John Doe',
-            date: '2024-03-20',
-            time: '10:00 AM',
-            type: 'Regular Checkup',
-            status: 'confirmed'
-        },
-        {
-            id: 2,
-            doctorName: 'Dr. Michael Brown',
-            patientName: 'Jane Smith',
-            date: '2024-03-22',
-            time: '2:30 PM',
-            type: 'Follow-up',
-            status: 'pending'
+    useEffect(() => {
+        fetchAppointments();
+    }, []);
+
+    const fetchAppointments = async () => {
+        try {
+            const data = await appointmentService.getAppointments();
+            setAppointments(data);
+        } catch (err) {
+            setError('Failed to fetch appointments');
+            console.error('Appointments fetch error:', err);
+        } finally {
+            setLoading(false);
         }
-    ];
-
-    const pastAppointments = [
-        {
-            id: 3,
-            doctorName: 'Dr. Sarah Wilson',
-            patientName: 'John Doe',
-            date: '2024-03-15',
-            time: '11:00 AM',
-            type: 'Consultation',
-            status: 'completed'
-        }
-    ];
-
-    const availableDoctors = [
-        { id: 1, name: 'Dr. Sarah Wilson', specialization: 'Cardiology' },
-        { id: 2, name: 'Dr. Michael Brown', specialization: 'General Medicine' },
-        { id: 3, name: 'Dr. Emily Davis', specialization: 'Pediatrics' }
-    ];
-
-    const availableTimeSlots = [
-        '9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM', '11:00 AM',
-        '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM', '4:00 PM'
-    ];
-
-    const handleBookAppointment = (e) => {
-        e.preventDefault();
-        // TODO: Implement booking logic
-        console.log('Booking appointment:', { selectedDate, selectedTime, selectedDoctor });
-        setIsBookingModalOpen(false);
     };
 
+    const handleCancelAppointment = async (appointmentId) => {
+        try {
+            await appointmentService.updateAppointment(appointmentId, {
+                status: 'cancelled',
+            });
+            fetchAppointments(); // Refresh the list
+        } catch (err) {
+            setError('Failed to cancel appointment');
+            console.error('Cancel appointment error:', err);
+        }
+    };
+
+    const filteredAppointments = appointments.filter((appointment) => {
+        const appointmentDate = new Date(appointment.date);
+        const now = new Date();
+
+        switch (filter) {
+            case 'upcoming':
+                return appointmentDate > now;
+            case 'past':
+                return appointmentDate < now;
+            default:
+                return true;
+        }
+    });
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div className="text-red-500">{error}</div>;
+    }
+
     return (
-        <div className="appointments-page">
-            <div className="appointments-header">
-                <h1>Appointments</h1>
-                <button
-                    className="book-appointment-btn"
-                    onClick={() => setIsBookingModalOpen(true)}
+        <div className="space-y-6">
+            {/* Header */}
+            <div className="flex justify-between items-center">
+                <h1 className="text-2xl font-bold text-gray-900">Appointments</h1>
+                <Link
+                    to="/appointments/create"
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
                 >
                     Book New Appointment
-                </button>
+                </Link>
             </div>
 
-            <div className="appointments-tabs">
-                <button
-                    className={`tab-btn ${activeTab === 'upcoming' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('upcoming')}
-                >
-                    Upcoming
-                </button>
-                <button
-                    className={`tab-btn ${activeTab === 'past' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('past')}
-                >
-                    Past
-                </button>
+            {/* Filters */}
+            <div className="bg-white shadow rounded-lg p-4">
+                <div className="flex space-x-4">
+                    <button
+                        onClick={() => setFilter('all')}
+                        className={`px-4 py-2 rounded-md ${filter === 'all'
+                                ? 'bg-blue-500 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                    >
+                        All
+                    </button>
+                    <button
+                        onClick={() => setFilter('upcoming')}
+                        className={`px-4 py-2 rounded-md ${filter === 'upcoming'
+                                ? 'bg-blue-500 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                    >
+                        Upcoming
+                    </button>
+                    <button
+                        onClick={() => setFilter('past')}
+                        className={`px-4 py-2 rounded-md ${filter === 'past'
+                                ? 'bg-blue-500 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                    >
+                        Past
+                    </button>
+                </div>
             </div>
 
-            <div className="appointments-list">
-                {activeTab === 'upcoming' ? (
-                    upcomingAppointments.map(appointment => (
-                        <div key={appointment.id} className="appointment-card">
-                            <div className="appointment-info">
-                                <h3>{appointment.doctorName}</h3>
-                                <p className="appointment-type">{appointment.type}</p>
-                                <p className="appointment-date">{appointment.date} at {appointment.time}</p>
-                                <span className={`status-badge ${appointment.status}`}>
-                                    {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
-                                </span>
+            {/* Appointments List */}
+            <div className="bg-white shadow rounded-lg divide-y">
+                {filteredAppointments.length > 0 ? (
+                    filteredAppointments.map((appointment) => (
+                        <div
+                            key={appointment.id}
+                            className="p-6 hover:bg-gray-50 transition-colors"
+                        >
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <h3 className="text-lg font-medium text-gray-900">
+                                        Dr. {appointment.doctorName}
+                                    </h3>
+                                    <p className="mt-1 text-gray-500">
+                                        {new Date(appointment.date).toLocaleDateString()}{' '}
+                                        {new Date(appointment.date).toLocaleTimeString()}
+                                    </p>
+                                    <p className="mt-1 text-gray-500">
+                                        {appointment.specialization}
+                                    </p>
+                                </div>
+                                <div className="flex items-center space-x-4">
+                                    <span
+                                        className={`px-3 py-1 rounded-full text-sm ${appointment.status === 'confirmed'
+                                                ? 'bg-green-100 text-green-800'
+                                                : appointment.status === 'cancelled'
+                                                    ? 'bg-red-100 text-red-800'
+                                                    : 'bg-yellow-100 text-yellow-800'
+                                            }`}
+                                    >
+                                        {appointment.status}
+                                    </span>
+                                    {appointment.status === 'confirmed' && (
+                                        <button
+                                            onClick={() => handleCancelAppointment(appointment.id)}
+                                            className="text-red-600 hover:text-red-800"
+                                        >
+                                            Cancel
+                                        </button>
+                                    )}
+                                </div>
                             </div>
-                            <div className="appointment-actions">
-                                <button className="reschedule-btn">Reschedule</button>
-                                <button className="cancel-btn">Cancel</button>
-                            </div>
+                            {appointment.notes && (
+                                <p className="mt-4 text-gray-600">{appointment.notes}</p>
+                            )}
                         </div>
                     ))
                 ) : (
-                    pastAppointments.map(appointment => (
-                        <div key={appointment.id} className="appointment-card">
-                            <div className="appointment-info">
-                                <h3>{appointment.doctorName}</h3>
-                                <p className="appointment-type">{appointment.type}</p>
-                                <p className="appointment-date">{appointment.date} at {appointment.time}</p>
-                                <span className={`status-badge ${appointment.status}`}>
-                                    {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
-                                </span>
-                            </div>
-                            <div className="appointment-actions">
-                                <button className="view-details-btn">View Details</button>
-                            </div>
-                        </div>
-                    ))
+                    <div className="p-6 text-center text-gray-500">
+                        No appointments found
+                    </div>
                 )}
             </div>
-
-            {isBookingModalOpen && (
-                <div className="modal-overlay">
-                    <div className="booking-modal">
-                        <div className="modal-header">
-                            <h2>Book New Appointment</h2>
-                            <button
-                                className="close-btn"
-                                onClick={() => setIsBookingModalOpen(false)}
-                            >
-                                ×
-                            </button>
-                        </div>
-                        <form onSubmit={handleBookAppointment}>
-                            <div className="form-group">
-                                <label htmlFor="doctor">Select Doctor</label>
-                                <select
-                                    id="doctor"
-                                    value={selectedDoctor}
-                                    onChange={(e) => setSelectedDoctor(e.target.value)}
-                                    required
-                                >
-                                    <option value="">Choose a doctor</option>
-                                    {availableDoctors.map(doctor => (
-                                        <option key={doctor.id} value={doctor.id}>
-                                            {doctor.name} - {doctor.specialization}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="date">Select Date</label>
-                                <input
-                                    type="date"
-                                    id="date"
-                                    value={selectedDate}
-                                    onChange={(e) => setSelectedDate(e.target.value)}
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="time">Select Time</label>
-                                <select
-                                    id="time"
-                                    value={selectedTime}
-                                    onChange={(e) => setSelectedTime(e.target.value)}
-                                    required
-                                >
-                                    <option value="">Choose a time slot</option>
-                                    {availableTimeSlots.map(time => (
-                                        <option key={time} value={time}>{time}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="form-actions">
-                                <button type="button" className="cancel-btn" onClick={() => setIsBookingModalOpen(false)}>
-                                    Cancel
-                                </button>
-                                <button type="submit" className="book-btn">
-                                    Book Appointment
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

@@ -1,29 +1,83 @@
 version: '3.8'
+
 services:
-  appointment-service:
-    build: ./appointment-service
+  mongodb:
+    image: mongo:latest
     ports:
-      - "3000:3000"
-    restart: unless-stopped
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - healthcare_network
 
   authentication-service:
-    build: ./authentication-service
+    build: 
+      context: ./authentication-service
+      dockerfile: Dockerfile
     ports:
-      - "3001:3001"
+      - "8000:8000"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/healthcare
+      - JWT_SECRET=your_jwt_secret_key_here
+      - JWT_EXPIRATION=24h
+      - PORT=8000
+    depends_on:
+      - mongodb
+    networks:
+      - healthcare_network
     restart: unless-stopped
 
-  transiaction-service:
-    build: ./transiaction-service
+  appointment-service:
+    build: 
+      context: ./appointment-service
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/healthcare
+    depends_on:
+      - mongodb
+      - authentication-service
+    networks:
+      - healthcare_network
+    restart: unless-stopped
+
+  transaction-service:
+    build: 
+      context: ./transiaction-service
+      dockerfile: Dockerfile
     ports:
       - "3002:3002"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/healthcare
+    depends_on:
+      - mongodb
+      - authentication-service
+    networks:
+      - healthcare_network
     restart: unless-stopped
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     ports:
       - "80:80"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_APPOINTMENT_API_URL=http://localhost:3000
+      - REACT_APP_TRANSACTION_API_URL=http://localhost:3002
     depends_on:
-      - appointment-service
       - authentication-service
-      - transiaction-service
+      - appointment-service
+      - transaction-service
+    networks:
+      - healthcare_network
     restart: unless-stopped
+
+networks:
+  healthcare_network:
+    driver: bridge
+
+volumes:
+  mongodb_data:

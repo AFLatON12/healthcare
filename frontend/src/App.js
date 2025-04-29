@@ -1,5 +1,8 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+import PrivateRoute from './components/auth/PrivateRoute';
+import Layout from './components/layout/Layout';
 import './styles/App.css';
 
 // Auth Pages
@@ -19,20 +22,22 @@ import DoctorDashboard from './pages/doctor/DoctorDashboard';
 
 function App() {
   return (
-    <Router>
-      <div className="App">
+    <AuthProvider>
+      <Router>
         <Routes>
-          {/* Auth Routes */}
-          <Route path="/" element={<LandingPage />} />
+          {/* Public Routes */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/join-us" element={<JoinUsPage />} />
 
-          {/* Patient Routes */}
-          <Route path="/patient/dashboard" element={<PatientDashboard />} />
-          <Route path="/patient/appointments" element={<Appointments />} />
-          <Route path="/patient/messages" element={<Messages />} />
-          <Route path="/patient/prescriptions" element={<Prescriptions />} />
+          {/* Protected Routes */}
+          <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="dashboard" element={<PatientDashboard />} />
+            <Route path="appointments" element={<Appointments />} />
+            <Route path="messages" element={<Messages />} />
+            <Route path="prescriptions" element={<Prescriptions />} />
+          </Route>
 
           {/* Doctor Routes */}
           <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
@@ -40,8 +45,8 @@ function App() {
           <Route path="/doctor/messages" element={<Messages />} />
           <Route path="/doctor/prescriptions" element={<Prescriptions />} />
         </Routes>
-      </div>
-    </Router>
+      </Router>
+    </AuthProvider>
   );
 }
 
