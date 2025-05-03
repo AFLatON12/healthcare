@@ -3,13 +3,14 @@ package controllers
 import (
 	"context"
 	"errors"
-	"time"
 
 	"appointment-service/models"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+
+	"time"
 )
 
 type AppointmentController struct {
