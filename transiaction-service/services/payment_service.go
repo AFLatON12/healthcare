@@ -3,7 +3,7 @@ package services
 import (
 	"time"
 
-	"github.com/heelth/transiaction-service/models"
+	"transiaction-service/models"
 )
 
 // PaymentService handles payment processing logic

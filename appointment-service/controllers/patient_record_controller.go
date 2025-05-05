@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"appointment-service/clients"
 	"appointment-service/models"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -11,13 +12,17 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// PatientRecordController handles patient record-related operations
 type PatientRecordController struct {
 	collection *mongo.Collection
+	authClient *clients.AuthClient
 }
 
-func NewPatientRecordController(db *mongo.Database) *PatientRecordController {
+// NewPatientRecordController creates a new patient record controller
+func NewPatientRecordController(db *mongo.Database, authClient *clients.AuthClient) *PatientRecordController {
 	return &PatientRecordController{
 		collection: db.Collection("patient_records"),
+		authClient: authClient,
 	}
 }
 

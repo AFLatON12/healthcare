@@ -2,9 +2,10 @@ package main
 
 import (
 	"log"
+	"os"
 
-	"github.com/heelth/transiaction-service/db"
-	"github.com/heelth/transiaction-service/routes"
+	"transiaction-service/db"
+	"transiaction-service/routes"
 )
 
 func main() {
@@ -19,8 +20,14 @@ func main() {
 	// Setup router with all routes
 	r := routes.SetupRouter(database)
 
+	// Get port from environment variable or use default
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8082"
+	}
+
 	// Start server
-	if err := r.Run(":8080"); err != nil {
+	if err := r.Run(":" + port); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }

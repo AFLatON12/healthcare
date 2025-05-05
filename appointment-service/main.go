@@ -4,14 +4,19 @@ import (
 	"log"
 	"os"
 
+	"github.com/gin-gonic/gin"
+
+	"appointment-service/clients"
+	"appointment-service/config"
 	"appointment-service/controllers"
 	"appointment-service/db"
 	"appointment-service/routes"
-
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	// Load service configuration
+	serviceConfig := config.NewServiceConfig()
+
 	// Connect to MongoDB
 	if err := db.ConnectMongoDB(); err != nil {
 		log.Fatalf("Failed to connect to MongoDB: %v", err)
@@ -21,11 +26,15 @@ func main() {
 	// Get database reference
 	database := db.MongoClient.Database("appointment_management_db")
 
-	// Initialize controllers
-	appointmentController := controllers.NewAppointmentController(database)
-	prescriptionController := controllers.NewPrescriptionController(database)
-	patientRecordController := controllers.NewPatientRecordController(database)
-	doctorScheduleController := controllers.NewDoctorScheduleController(database)
+	// Initialize service clients
+	authClient := clients.NewAuthClient(serviceConfig)
+	transactionClient := clients.NewTransactionClient(serviceConfig)
+
+	// Initialize controllers with service clients
+	appointmentController := controllers.NewAppointmentController(database, authClient, transactionClient)
+	prescriptionController := controllers.NewPrescriptionController(database, authClient)
+	patientRecordController := controllers.NewPatientRecordController(database, authClient)
+	doctorScheduleController := controllers.NewDoctorScheduleController(database, authClient)
 
 	// Initialize Gin router
 	router := gin.Default()
@@ -33,7 +42,7 @@ func main() {
 	// Setup routes
 	routes.SetupAppointmentRoutes(router, appointmentController)
 	routes.SetupPrescriptionRoutes(router, prescriptionController)
-	routes.SetupPatientRecordRoutes(router, patientRecordController)
+	routes.SetupPatientRecordRoutes(router, patientRecordController, authClient)
 	routes.SetupDoctorScheduleRoutes(router, doctorScheduleController)
 
 	// Get port from environment variable or use default

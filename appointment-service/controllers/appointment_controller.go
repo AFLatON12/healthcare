@@ -3,29 +3,42 @@ package controllers
 import (
 	"context"
 	"errors"
+	"time"
 
+	"appointment-service/clients"
 	"appointment-service/models"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-
-	"time"
 )
 
+// AppointmentController handles appointment-related operations
 type AppointmentController struct {
+	db                    *mongo.Database
+	authClient            *clients.AuthClient
+	transactionClient     *clients.TransactionClient
 	appointmentCollection *mongo.Collection
 	patientRecordCtrl     *PatientRecordController
 	prescriptionCtrl      *PrescriptionController
 	doctorScheduleCtrl    *DoctorScheduleController
 }
 
-func NewAppointmentController(db *mongo.Database) *AppointmentController {
+// NewAppointmentController creates a new appointment controller
+func NewAppointmentController(db *mongo.Database, authClient *clients.AuthClient, transactionClient *clients.TransactionClient) *AppointmentController {
+	// Initialize other controllers with auth client
+	patientRecordCtrl := NewPatientRecordController(db, authClient)
+	prescriptionCtrl := NewPrescriptionController(db, authClient)
+	doctorScheduleCtrl := NewDoctorScheduleController(db, authClient)
+
 	return &AppointmentController{
+		db:                    db,
+		authClient:            authClient,
+		transactionClient:     transactionClient,
 		appointmentCollection: db.Collection("appointments"),
-		patientRecordCtrl:     NewPatientRecordController(db),
-		prescriptionCtrl:      NewPrescriptionController(db),
-		doctorScheduleCtrl:    NewDoctorScheduleController(db),
+		patientRecordCtrl:     patientRecordCtrl,
+		prescriptionCtrl:      prescriptionCtrl,
+		doctorScheduleCtrl:    doctorScheduleCtrl,
 	}
 }
 

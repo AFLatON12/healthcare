@@ -1,8 +1,9 @@
 package routes
 
 import (
+	"transiaction-service/controllers"
+
 	"github.com/gin-gonic/gin"
-	"github.com/heelth/transiaction-service/controllers"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 

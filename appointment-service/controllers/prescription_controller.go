@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"appointment-service/clients"
 	"appointment-service/models"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -11,12 +12,18 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// PrescriptionController handles prescription-related operations
 type PrescriptionController struct {
+	db         *mongo.Database
+	authClient *clients.AuthClient
 	collection *mongo.Collection
 }
 
-func NewPrescriptionController(db *mongo.Database) *PrescriptionController {
+// NewPrescriptionController creates a new prescription controller
+func NewPrescriptionController(db *mongo.Database, authClient *clients.AuthClient) *PrescriptionController {
 	return &PrescriptionController{
+		db:         db,
+		authClient: authClient,
 		collection: db.Collection("prescriptions"),
 	}
 }

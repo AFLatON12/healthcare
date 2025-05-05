@@ -1,0 +1,61 @@
+name: API Test Workflow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-apis:
+    runs-on: ubuntu-latest
+
+    services:
+      mongo:
+        image: mongo:latest
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'" 
+          --health-interval 10s 
+          --health-timeout 5s 
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./authentication-service-node
+
+      - name: Start authentication-service-node
+        run: npm start &
+        working-directory: ./authentication-service-node
+
+      - name: Wait for service to be ready
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:8000/api/v1/health | grep -q "healthy"; then
+              echo "Service is up"
+              exit 0
+            fi
+            echo "Waiting for service..."
+            sleep 2
+          done
+          exit 1
+
+      - name: Run API tests with newman
+        uses: mikeal/newman-action@v4
+        with:
+          collection: ./authentication-service-node/Healthcare-Auth-Service.postman_collection.json
+          environment: ./authentication-service-node/.env
+          reporters: cli,junit
+          reporter-junit-export: ./results/junit.xml

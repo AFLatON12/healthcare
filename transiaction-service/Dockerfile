@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.21-alpine AS builder
+FROM golang:1.24-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache gcc musl-dev git
@@ -50,6 +50,7 @@ ENV PORT=3002
 ENV GIN_MODE=release
 ENV MONGODB_URI="mongodb://mongodb:27017/healthcare"
 ENV DB_NAME="billing"
+ENV JWT_SECRET="83fda7kdnw!3lfKdxs8fjsdn3jKDX923ss"
 
 # Expose port
 EXPOSE $PORT

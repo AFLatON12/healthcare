@@ -1,0 +1,974 @@
+{
+	"info": {
+		"_postman_id": "12345678-1234-1234-1234-123456789012",
+		"name": "Healthcare Auth Service",
+		"description": "Complete API documentation for the Healthcare Authentication Service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/health",
+					"host": ["{{base_url}}"],
+					"path": ["health"]
+				},
+				"description": "Check if the service is running"
+			},
+			"response": [
+				{
+					"name": "Success",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": ["{{base_url}}"],
+							"path": ["health"]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "text",
+					"header": [],
+					"cookie": [],
+					"body": "OK"
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"password123\",\n    \"role\": \"admin\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						},
+						"description": "Authenticate user and get JWT token"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"password123\",\n    \"role\": \"admin\"\n}"
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"user\": {\n        \"id\": \"12345\",\n        \"email\": \"user@example.com\",\n        \"role\": \"admin\",\n        \"permissions\": [\"admin:list\", \"admin:view\"]\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Initialize Super Admin",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"superadmin@example.com\",\n    \"password\": \"strongpassword123\",\n    \"name\": \"Super Admin\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/initialize-super-admin",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "initialize-super-admin"]
+						},
+						"description": "Create the first super admin user"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"message\": \"Super admin initialized successfully\",\n    \"user\": {\n        \"id\": \"12345\",\n        \"email\": \"superadmin@example.com\",\n        \"name\": \"Super Admin\",\n        \"role\": \"super_admin\"\n    }\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Admin Management",
+			"item": [
+				{
+					"name": "Create Admin",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"password123\",\n    \"name\": \"Admin User\",\n    \"permissions\": [\"admin:list\", \"admin:view\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/admins",
+							"host": ["{{base_url}}"],
+							"path": ["admins"]
+						},
+						"description": "Create a new admin user"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"12345\",\n    \"email\": \"admin@example.com\",\n    \"name\": \"Admin User\",\n    \"permissions\": [\"admin:list\", \"admin:view\"]\n}"
+						}
+					]
+				},
+				{
+					"name": "List Admins",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admins",
+							"host": ["{{base_url}}"],
+							"path": ["admins"]
+						},
+						"description": "List all admin users"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"admins\": [\n        {\n            \"id\": \"12345\",\n            \"email\": \"admin1@example.com\",\n            \"name\": \"Admin One\",\n            \"permissions\": [\"admin:list\", \"admin:view\"]\n        },\n        {\n            \"id\": \"12346\",\n            \"email\": \"admin2@example.com\",\n            \"name\": \"Admin Two\",\n            \"permissions\": [\"admin:list\", \"admin:view\", \"admin:create\"]\n        }\n    ],\n    \"total\": 2\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Admin",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admins/{{admin_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["admins", "{{admin_id}}"]
+						},
+						"description": "Get admin details by ID"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"12345\",\n    \"email\": \"admin@example.com\",\n    \"name\": \"Admin User\",\n    \"permissions\": [\"admin:list\", \"admin:view\"]\n}"
+						}
+					]
+				},
+				{
+					"name": "Update Admin",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated Admin Name\",\n    \"permissions\": [\"admin:list\", \"admin:view\", \"admin:update\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/admins/{{admin_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["admins", "{{admin_id}}"]
+						},
+						"description": "Update admin details"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"12345\",\n    \"email\": \"admin@example.com\",\n    \"name\": \"Updated Admin Name\",\n    \"permissions\": [\"admin:list\", \"admin:view\", \"admin:update\"]\n}"
+						}
+					]
+				},
+				{
+					"name": "Delete Admin",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admins/{{admin_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["admins", "{{admin_id}}"]
+						},
+						"description": "Delete an admin user"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": "text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Update Admin Permissions",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"permissions\": [\"admin:list\", \"admin:view\", \"admin:create\", \"admin:update\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/admins/{{admin_id}}/permissions",
+							"host": ["{{base_url}}"],
+							"path": ["admins", "{{admin_id}}", "permissions"]
+						},
+						"description": "Update admin permissions"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"12345\",\n    \"email\": \"admin@example.com\",\n    \"name\": \"Admin User\",\n    \"permissions\": [\"admin:list\", \"admin:view\", \"admin:create\", \"admin:update\"]\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Doctor Management",
+			"item": [
+				{
+					"name": "Register Doctor",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"doctor@example.com\",\n    \"password\": \"password123\",\n    \"name\": \"Dr. John Doe\",\n    \"specialization\": \"Cardiology\",\n    \"license_number\": \"DOC123456\",\n    \"qualifications\": [\"MD\", \"PhD\"],\n    \"experience_years\": 10\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/doctors/register",
+							"host": ["{{base_url}}"],
+							"path": ["doctors", "register"]
+						},
+						"description": "Register a new doctor (pending approval)"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"12345\",\n    \"email\": \"doctor@example.com\",\n    \"name\": \"Dr. John Doe\",\n    \"specialization\": \"Cardiology\",\n    \"license_number\": \"DOC123456\",\n    \"qualifications\": [\"MD\", \"PhD\"],\n    \"experience_years\": 10,\n    \"status\": \"pending\"\n}"
+						}
+					]
+				},
+				{
+					"name": "List Doctors",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/doctors",
+							"host": ["{{base_url}}"],
+							"path": ["doctors"]
+						},
+						"description": "List all approved doctors"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"doctors\": [\n        {\n            \"id\": \"12345\",\n            \"email\": \"doctor1@example.com\",\n            \"name\": \"Dr. John Doe\",\n            \"specialization\": \"Cardiology\",\n            \"license_number\": \"DOC123456\",\n            \"qualifications\": [\"MD\", \"PhD\"],\n            \"experience_years\": 10,\n            \"status\": \"active\"\n        }\n    ],\n    \"total\": 1\n}"
+						}
+					]
+				},
+				{
+					"name": "List Pending Doctors",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/doctors/pending",
+							"host": ["{{base_url}}"],
+							"path": ["doctors", "pending"]
+						},
+						"description": "List all pending doctor registrations"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"doctors\": [\n        {\n            \"id\": \"12346\",\n            \"email\": \"doctor2@example.com\",\n            \"name\": \"Dr. Jane Smith\",\n            \"specialization\": \"Neurology\",\n            \"license_number\": \"DOC789012\",\n            \"qualifications\": [\"MD\"],\n            \"experience_years\": 5,\n            \"status\": \"pending\"\n        }\n    ],\n    \"total\": 1\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Doctor",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/doctors/{{doctor_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["doctors", "{{doctor_id}}"]
+						},
+						"description": "Get doctor details by ID"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"12345\",\n    \"email\": \"doctor@example.com\",\n    \"name\": \"Dr. John Doe\",\n    \"specialization\": \"Cardiology\",\n    \"license_number\": \"DOC123456\",\n    \"qualifications\": [\"MD\", \"PhD\"],\n    \"experience_years\": 10,\n    \"status\": \"active\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Update Doctor",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Dr. John A. Doe\",\n    \"specialization\": \"Cardiology\",\n    \"qualifications\": [\"MD\", \"PhD\", \"FACC\"],\n    \"experience_years\": 12\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/doctors/{{doctor_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["doctors", "{{doctor_id}}"]
+						},
+						"description": "Update doctor details"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"12345\",\n    \"email\": \"doctor@example.com\",\n    \"name\": \"Dr. John A. Doe\",\n    \"specialization\": \"Cardiology\",\n    \"license_number\": \"DOC123456\",\n    \"qualifications\": [\"MD\", \"PhD\", \"FACC\"],\n    \"experience_years\": 12,\n    \"status\": \"active\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Approve Doctor",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/doctors/{{doctor_id}}/approve",
+							"host": ["{{base_url}}"],
+							"path": ["doctors", "{{doctor_id}}", "approve"]
+						},
+						"description": "Approve a pending doctor registration"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"12345\",\n    \"email\": \"doctor@example.com\",\n    \"name\": \"Dr. John Doe\",\n    \"specialization\": \"Cardiology\",\n    \"license_number\": \"DOC123456\",\n    \"qualifications\": [\"MD\", \"PhD\"],\n    \"experience_years\": 10,\n    \"status\": \"active\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Reject Doctor",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"reason\": \"Invalid license number\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/doctors/{{doctor_id}}/reject",
+							"host": ["{{base_url}}"],
+							"path": ["doctors", "{{doctor_id}}", "reject"]
+						},
+						"description": "Reject a pending doctor registration"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"12345\",\n    \"email\": \"doctor@example.com\",\n    \"name\": \"Dr. John Doe\",\n    \"specialization\": \"Cardiology\",\n    \"license_number\": \"DOC123456\",\n    \"qualifications\": [\"MD\", \"PhD\"],\n    \"experience_years\": 10,\n    \"status\": \"rejected\",\n    \"rejection_reason\": \"Invalid license number\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Patient Management",
+			"item": [
+				{
+					"name": "Register Patient",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"patient@example.com\",\n    \"password\": \"password123\",\n    \"name\": \"John Smith\",\n    \"date_of_birth\": \"1990-01-01\",\n    \"gender\": \"male\",\n    \"blood_type\": \"A+\",\n    \"allergies\": [\"penicillin\"],\n    \"medical_conditions\": [\"hypertension\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/patients/register",
+							"host": ["{{base_url}}"],
+							"path": ["patients", "register"]
+						},
+						"description": "Register a new patient"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"12345\",\n    \"email\": \"patient@example.com\",\n    \"name\": \"John Smith\",\n    \"date_of_birth\": \"1990-01-01\",\n    \"gender\": \"male\",\n    \"blood_type\": \"A+\",\n    \"allergies\": [\"penicillin\"],\n    \"medical_conditions\": [\"hypertension\"]\n}"
+						}
+					]
+				},
+				{
+					"name": "List Patients",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/patients",
+							"host": ["{{base_url}}"],
+							"path": ["patients"]
+						},
+						"description": "List all patients (requires admin or doctor role)"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"patients\": [\n        {\n            \"id\": \"12345\",\n            \"email\": \"patient1@example.com\",\n            \"name\": \"John Smith\",\n            \"date_of_birth\": \"1990-01-01\",\n            \"gender\": \"male\"\n        },\n        {\n            \"id\": \"12346\",\n            \"email\": \"patient2@example.com\",\n            \"name\": \"Jane Doe\",\n            \"date_of_birth\": \"1985-05-15\",\n            \"gender\": \"female\"\n        }\n    ],\n    \"total\": 2\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Patient",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/patients/{{patient_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["patients", "{{patient_id}}"]
+						},
+						"description": "Get patient details by ID"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"12345\",\n    \"email\": \"patient@example.com\",\n    \"name\": \"John Smith\",\n    \"date_of_birth\": \"1990-01-01\",\n    \"gender\": \"male\",\n    \"blood_type\": \"A+\",\n    \"allergies\": [\"penicillin\"],\n    \"medical_conditions\": [\"hypertension\"]\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Patient History",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/patients/{{patient_id}}/history",
+							"host": ["{{base_url}}"],
+							"path": ["patients", "{{patient_id}}", "history"]
+						},
+						"description": "Get patient medical history"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"patient_id\": \"12345\",\n    \"history\": [\n        {\n            \"id\": \"hist123\",\n            \"date\": \"2024-04-01T10:00:00Z\",\n            \"doctor_id\": \"doc123\",\n            \"doctor_name\": \"Dr. John Doe\",\n            \"diagnosis\": \"Common cold\",\n            \"prescription\": \"Rest and fluids\",\n            \"notes\": \"Patient reported fever and cough\"\n        },\n        {\n            \"id\": \"hist124\",\n            \"date\": \"2024-03-15T14:30:00Z\",\n            \"doctor_id\": \"doc456\",\n            \"doctor_name\": \"Dr. Jane Smith\",\n            \"diagnosis\": \"Annual checkup\",\n            \"prescription\": null,\n            \"notes\": \"All vitals normal\"\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Add Patient History",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"diagnosis\": \"Common cold\",\n    \"prescription\": \"Rest and fluids\",\n    \"notes\": \"Patient reported fever and cough\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/patients/{{patient_id}}/history",
+							"host": ["{{base_url}}"],
+							"path": ["patients", "{{patient_id}}", "history"]
+						},
+						"description": "Add new entry to patient medical history"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"hist123\",\n    \"patient_id\": \"12345\",\n    \"date\": \"2024-04-01T10:00:00Z\",\n    \"doctor_id\": \"doc123\",\n    \"doctor_name\": \"Dr. John Doe\",\n    \"diagnosis\": \"Common cold\",\n    \"prescription\": \"Rest and fluids\",\n    \"notes\": \"Patient reported fever and cough\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "System Management",
+			"item": [
+				{
+					"name": "Get System Config",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/system/config",
+							"host": ["{{base_url}}"],
+							"path": ["system", "config"]
+						},
+						"description": "Get system configuration (super admin only)"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"settings\": {\n        \"maintenance_mode\": false,\n        \"registration_enabled\": true,\n        \"max_login_attempts\": 5,\n        \"session_timeout_minutes\": 60,\n        \"password_policy\": {\n            \"min_length\": 8,\n            \"require_uppercase\": true,\n            \"require_lowercase\": true,\n            \"require_numbers\": true,\n            \"require_special_chars\": true\n        }\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Update System Config",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"settings\": {\n        \"maintenance_mode\": true,\n        \"registration_enabled\": false,\n        \"max_login_attempts\": 3,\n        \"session_timeout_minutes\": 30,\n        \"password_policy\": {\n            \"min_length\": 10,\n            \"require_uppercase\": true,\n            \"require_lowercase\": true,\n            \"require_numbers\": true,\n            \"require_special_chars\": true\n        }\n    }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/system/config",
+							"host": ["{{base_url}}"],
+							"path": ["system", "config"]
+						},
+						"description": "Update system configuration (super admin only)"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"settings\": {\n        \"maintenance_mode\": true,\n        \"registration_enabled\": false,\n        \"max_login_attempts\": 3,\n        \"session_timeout_minutes\": 30,\n        \"password_policy\": {\n            \"min_length\": 10,\n            \"require_uppercase\": true,\n            \"require_lowercase\": true,\n            \"require_numbers\": true,\n            \"require_special_chars\": true\n        }\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Get System Metrics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/system/metrics",
+							"host": ["{{base_url}}"],
+							"path": ["system", "metrics"]
+						},
+						"description": "Get system metrics (super admin only)"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"metrics\": {\n        \"total_users\": 1250,\n        \"active_users\": 850,\n        \"total_doctors\": 150,\n        \"pending_doctors\": 25,\n        \"total_patients\": 1000,\n        \"api_requests_24h\": 25000,\n        \"average_response_time_ms\": 150,\n        \"error_rate_24h\": 0.02,\n        \"system_health\": {\n            \"cpu_usage\": 45.5,\n            \"memory_usage\": 65.2,\n            \"disk_usage\": 38.7\n        }\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Get System Logs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/system/logs?level=error&start_date=2024-04-01&end_date=2024-04-30",
+							"host": ["{{base_url}}"],
+							"path": ["system", "logs"],
+							"query": [
+								{
+									"key": "level",
+									"value": "error"
+								},
+								{
+									"key": "start_date",
+									"value": "2024-04-01"
+								},
+								{
+									"key": "end_date",
+									"value": "2024-04-30"
+								}
+							]
+						},
+						"description": "Get system logs (super admin only)"
+					},
+					"response": [
+						{
+							"name": "Success",
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"logs\": [\n        {\n            \"timestamp\": \"2024-04-01T10:15:23Z\",\n            \"level\": \"error\",\n            \"service\": \"auth\",\n            \"message\": \"Failed login attempt: Invalid credentials\",\n            \"details\": {\n                \"ip\": \"192.168.1.100\",\n                \"user_agent\": \"Mozilla/5.0...\"\n            }\n        },\n        {\n            \"timestamp\": \"2024-04-02T15:30:45Z\",\n            \"level\": \"error\",\n            \"service\": \"database\",\n            \"message\": \"Connection timeout\",\n            \"details\": {\n                \"db_host\": \"primary\",\n                \"retry_count\": 3\n            }\n        }\n    ],\n    \"total\": 2,\n    \"page\": 1,\n    \"per_page\": 50\n}"
+						}
+					]
+				}
+			]
+		}
+	]
+} 

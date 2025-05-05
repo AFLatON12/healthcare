@@ -57,6 +57,7 @@ func ValidatePaymentStatus(status string) error {
 		"completed":  true,
 		"failed":     true,
 		"refunded":   true,
+		"cancelled":  true,
 	}
 	if !validStatuses[status] {
 		return ErrInvalidStatus

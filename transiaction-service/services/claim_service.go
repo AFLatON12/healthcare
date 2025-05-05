@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/heelth/transiaction-service/models"
+	"transiaction-service/models"
 )
 
 // ClaimService handles insurance claim processing logic

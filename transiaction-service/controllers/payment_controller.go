@@ -4,9 +4,10 @@ import (
 	"context"
 	"net/http"
 
+	"transiaction-service/models"
+	"transiaction-service/services"
+
 	"github.com/gin-gonic/gin"
-	"github.com/heelth/transiaction-service/models"
-	"github.com/heelth/transiaction-service/services"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -138,12 +139,12 @@ func (pc *PaymentController) UpdatePayment(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Payment updated successfully"})
 }
 
-// ListPayments lists all payments with optional filters
 func (pc *PaymentController) ListPayments(c *gin.Context) {
 	filter := bson.M{}
 
 	// Add filters based on query parameters
-	if status := c.Query("status"); status != "" {
+	status := c.Query("status")
+	if status != "" && status != "all" {
 		filter["status"] = status
 	}
 	if patientID := c.Query("patient_id"); patientID != "" {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/heelth/transiaction-service/models"
+	"transiaction-service/models"
 )
 
 // InvoiceService handles invoice management logic

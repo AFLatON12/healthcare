@@ -5,9 +5,10 @@ import (
 	"net/http"
 	"time"
 
+	"transiaction-service/models"
+	"transiaction-service/services"
+
 	"github.com/gin-gonic/gin"
-	"github.com/heelth/transiaction-service/models"
-	"github.com/heelth/transiaction-service/services"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"

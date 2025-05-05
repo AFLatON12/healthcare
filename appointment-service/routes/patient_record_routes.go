@@ -1,16 +1,20 @@
 package routes
 
 import (
+	"appointment-service/clients"
 	"appointment-service/controllers"
 	"appointment-service/models"
 	"net/http"
+
+	"appointment-service/middleware"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func SetupPatientRecordRoutes(router *gin.Engine, patientRecordController *controllers.PatientRecordController) {
+func SetupPatientRecordRoutes(router *gin.Engine, patientRecordController *controllers.PatientRecordController, authClient *clients.AuthClient) {
 	records := router.Group("/api/patient-records")
+	records.Use(middleware.AuthMiddleware(authClient))
 	{
 		// Create a new patient record
 		records.POST("/", func(c *gin.Context) {

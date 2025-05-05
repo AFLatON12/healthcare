@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"appointment-service/clients"
 	"appointment-service/models"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -11,13 +12,17 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// DoctorScheduleController handles doctor schedule-related operations
 type DoctorScheduleController struct {
 	collection *mongo.Collection
+	authClient *clients.AuthClient
 }
 
-func NewDoctorScheduleController(db *mongo.Database) *DoctorScheduleController {
+// NewDoctorScheduleController creates a new doctor schedule controller
+func NewDoctorScheduleController(db *mongo.Database, authClient *clients.AuthClient) *DoctorScheduleController {
 	return &DoctorScheduleController{
 		collection: db.Collection("doctor_schedules"),
+		authClient: authClient,
 	}
 }
 

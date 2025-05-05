@@ -47,6 +47,7 @@ ENV PORT=3000
 ENV GIN_MODE=release
 ENV MONGODB_URI="mongodb://mongodb:27017/healthcare"
 ENV DB_NAME="appointment_management_db"
+ENV JWT_SECRET="83fda7kdnw!3lfKdxs8fjsdn3jKDX923ss"
 
 # Expose port
 EXPOSE $PORT
