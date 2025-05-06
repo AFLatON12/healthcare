@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - healthcare_network
+
+  authentication-service:
+    build: 
+      context: ./authentication-service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/healthcare
+      - JWT_SECRET=83fda7kdnw!3lfKdxs8fjsdn3jKDX923ss
+      - JWT_EXPIRATION=24h
+      - PORT=8000
+      - GOOGLE_CLIENT_ID=66944987642-25namui746hqqlk6ecor1539opq65k1p.apps.googleusercontent.com
+      - GOOGLE_CLIENT_SECRET=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
+      - GOOGLE_REDIRECT_URL=http://localhost:8080/api/v1/auth/google/callback
+      - FACEBOOK_CLIENT_ID=1395712688092858
+      - FACEBOOK_CLIENT_SECRET=00c56c23a168c3d9873a2e0d777e6bed
+      - FACEBOOK_REDIRECT_URL=http://localhost:8080/api/v1/auth/facebook/callback
+    depends_on:
+      - mongodb
+    networks:
+      - healthcare_network
+    restart: unless-stopped
+
+  appointment-service:
+    build: 
+      context: ./appointment-service
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/healthcare
+    depends_on:
+      - mongodb
+      - authentication-service
+    networks:
+      - healthcare_network
+    restart: unless-stopped
+
+  transaction-service:
+    build: 
+      context: ./transiaction-service
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/healthcare
+    depends_on:
+      - mongodb
+      - authentication-service
+    networks:
+      - healthcare_network
+    restart: unless-stopped
+
+networks:
+  healthcare_network:
+    driver: bridge
+
+volumes:
+  mongodb_data:

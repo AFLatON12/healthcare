@@ -1,0 +1,58 @@
+services:
+  authentication-service:
+    build: ./authentication-service-node
+    container_name: authentication-service
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - MONGO_URI=mongodb://mongo:27017/authenticationdb
+    depends_on:
+      - mongo
+
+  appointment-service:
+    build: ./appointment-service-node
+    container_name: appointment-service
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+      - MONGO_URI=mongodb://mongo:27017/appointmentdb
+    depends_on:
+      - mongo
+      - authentication-service
+
+  transaction-service:
+    build: ./transaction-service-node
+    container_name: transaction-service
+    ports:
+      - "8082:8082"
+    environment:
+      - PORT=8082
+      - MONGO_URI=mongodb://mongo:27017/transactiondb
+    depends_on:
+      - mongo
+      - authentication-service
+      - appointment-service
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - authentication-service
+      - appointment-service
+      - transaction-service
+
+  mongo:
+    image: mongo:6.0
+    container_name: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:

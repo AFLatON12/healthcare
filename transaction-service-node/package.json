@@ -1,0 +1,26 @@
+{
+  "name": "transaction-service-node",
+  "version": "1.0.0",
+  "description": "Node.js version of the transaction service",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^4.18.2",
+    "mongodb": "^4.12.1",
+    "mongoose": "^6.8.0",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "author": "",
+  "license": "ISC"
+}
