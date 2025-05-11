@@ -1,24 +1,8 @@
-version: '3.8'
+
 
 services:
-  api-gateway:
-    image: ismaill370/api-gateway:latest
-    ports:
-      - "8080:8080"
-    environment:
-      - AUTH_SERVICE_URL=http://authentication-service:8000
-      - APPOINTMENT_SERVICE_URL=http://appointment-service:8081
-      - TRANSACTION_SERVICE_URL=http://transaction-service:8082
-      - FRONTEND_URL=http://frontend:3000
-      - JWT_SECRET=${JWT_SECRET}
-    depends_on:
-      - authentication-service
-      - appointment-service
-      - transaction-service
-      - frontend
-
   authentication-service:
-    image: ismaill370/authentication-service:latest
+    image: ismaill370/authentication-service-node:latest
     container_name: authentication-service
     ports:
       - "8000:8000"
@@ -32,7 +16,7 @@ services:
       - mongo
 
   appointment-service:
-    image: ismaill370/appointment-service:latest
+    image: ismaill370/appointment-service-node:latest
     container_name: appointment-service
     ports:
       - "8081:8081"
@@ -45,7 +29,7 @@ services:
       - authentication-service
 
   transaction-service:
-    image: ismaill370/transaction-service:latest
+    image: ismaill370/transaction-service-node:latest
     container_name: transaction-service
     ports:
       - "8082:8082"

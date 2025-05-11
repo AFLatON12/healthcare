@@ -1,26 +1,21 @@
 #!/bin/bash
 
-# Build and push Docker images to Docker Hub
-
-# Set your Docker Hub username
-DOCKER_USERNAME=ismaill370
-
-# List of services and their directories
+# List of services to build and push
 services=(
-  "api-gateway"
   "authentication-service-node"
   "appointment-service-node"
   "transaction-service-node"
   "frontend"
 )
 
+# Build and push each service
 for service in "${services[@]}"
 do
-  echo "Building image for $service..."
-  docker build -t $DOCKER_USERNAME/$service:latest ./$service
-
-  echo "Pushing image for $service..."
-  docker push $DOCKER_USERNAME/$service:latest
+  echo "Building $service..."
+  docker build -t ismaill370/$service:latest ./$service
+  
+  echo "Pushing $service..."
+  docker push ismaill370/$service:latest
 done
 
-echo "All images built and pushed successfully."
+echo "All images built and pushed successfully!"

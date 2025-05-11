@@ -1,23 +1,6 @@
-version: '3.8'
+
 
 services:
-  api-gateway:
-    build:
-      context: ./api-gateway
-    ports:
-      - "8080:8080"
-    environment:
-      - AUTH_SERVICE_URL=http://authentication-service:8000
-      - APPOINTMENT_SERVICE_URL=http://appointment-service:8081
-      - TRANSACTION_SERVICE_URL=http://transaction-service:8082
-      - FRONTEND_URL=http://frontend:3000
-      - JWT_SECRET=${JWT_SECRET}
-    depends_on:
-      - authentication-service
-      - appointment-service
-      - transaction-service
-      - frontend
-
   authentication-service:
     build: ./authentication-service-node
     container_name: authentication-service
