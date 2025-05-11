@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  authentication-service:
+    image: ismaill370/authentication-service:latest
+    container_name: authentication-service
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - MONGO_URI=${MONGO_URI}
+      - MONGO_USER=${MONGO_USER}
+      - MONGO_PASSWORD=${MONGO_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - mongo
+
+  appointment-service:
+    image: ismaill370/appointment-service:latest
+    container_name: appointment-service
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - mongo
+      - authentication-service
+
+  transaction-service:
+    image: ismaill370/transaction-service:latest
+    container_name: transaction-service
+    ports:
+      - "8082:8082"
+    environment:
+      - PORT=8082
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - mongo
+      - authentication-service
+      - appointment-service
+
+  frontend:
+    image: ismaill370/frontend:latest
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - authentication-service
+      - appointment-service
+      - transaction-service
+
+  mongo:
+    image: mongo:6.0
+    container_name: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Transactions.css';
 
-const Transactions = () => {
+const Transactions = ({ filterType, filterId }) => {
   const [transactions, setTransactions] = useState([]);
   const [newTransaction, setNewTransaction] = useState({ amount: '', description: '' });
   const [editingTransactionId, setEditingTransactionId] = useState(null);
@@ -10,11 +10,15 @@ const Transactions = () => {
 
   useEffect(() => {
     fetchTransactions();
-  }, []);
+  }, [filterType, filterId]);
 
   const fetchTransactions = async () => {
     try {
-      const response = await axios.get('/api/payments');
+      let url = '/api/payments';
+      if (filterType && filterId) {
+        url += `?${filterType}=${filterId}`;
+      }
+      const response = await axios.get(url);
       setTransactions(response.data);
     } catch (error) {
       console.error('Error fetching transactions:', error);
@@ -28,6 +32,21 @@ const Transactions = () => {
       setNewTransaction({ amount: '', description: '' });
     } catch (error) {
       console.error('Error creating transaction:', error);
+    }
+  };
+
+  const handlePayWithPaymob = async () => {
+    try {
+      const response = await axios.post('/api/payments/paymob-initiate', {
+        amount: newTransaction.amount,
+        description: newTransaction.description,
+        patientId: filterType === 'patient_id' ? filterId : undefined,
+        doctorId: filterType === 'doctor_id' ? filterId : undefined,
+      });
+      window.location.href = response.data.payment_url;
+    } catch (error) {
+      console.error('Error initiating Paymob payment:', error);
+      alert('Failed to initiate Paymob payment');
     }
   };
 
@@ -78,6 +97,7 @@ const Transactions = () => {
           onChange={(e) => setNewTransaction({ ...newTransaction, description: e.target.value })}
         />
         <button onClick={handleCreateTransaction}>Create Transaction</button>
+        <button onClick={handlePayWithPaymob} style={{ marginLeft: 8 }}>Pay with Paymob</button>
       </div>
       <table className="transactions-table">
         <thead>

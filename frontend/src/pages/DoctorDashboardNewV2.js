@@ -1,11 +1,48 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Container, Typography, Table, TableHead, TableRow, TableCell, TableBody, Button, CircularProgress, Alert, Box, Paper, Snackbar, TextField } from '@mui/material';
+import {
+  Box,
+  Paper,
+  Typography,
+  Button,
+  CircularProgress,
+  Alert,
+  Snackbar,
+  TextField,
+  AppBar,
+  Toolbar,
+  Avatar,
+  Stack,
+  Divider,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Drawer,
+} from '@mui/material';
+import {
+  CalendarToday,
+  Person,
+  Schedule,
+  Assignment,
+  MonetizationOn,
+  Logout,
+  LocalHospital,
+} from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import './DoctorDashboard.css';
 import DoctorScheduleManagement from '../components/DoctorScheduleManagement';
 import PrescriptionManagement from '../components/PrescriptionManagement';
 import Transactions from './Transactions';
+import DoctorTransactions from './DoctorTransactions';
+
+const sidebarItems = [
+  { key: 'appointments', label: 'Appointments', icon: <CalendarToday /> },
+  { key: 'profile', label: 'Profile', icon: <Person /> },
+  { key: 'schedule', label: 'Schedule Management', icon: <Schedule /> },
+  { key: 'prescriptions', label: 'Prescriptions', icon: <Assignment /> },
+  { key: 'transactions', label: 'Transactions', icon: <MonetizationOn /> },
+];
 
 const DoctorDashboardNewV2 = ({ userPermissions = [] }) => {
   const [appointments, setAppointments] = useState([]);
@@ -19,6 +56,13 @@ const DoctorDashboardNewV2 = ({ userPermissions = [] }) => {
   const [profileError, setProfileError] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const navigate = useNavigate();
+
+  // Simulate doctor user info
+  const doctorUser = {
+    name: doctorProfile?.name || 'Doctor',
+    email: doctorProfile?.email || 'doctor@healthcare.com',
+    avatar: '',
+  };
 
   // Updated to get userId from stored user object in localStorage
   const token = localStorage.getItem('token');
@@ -172,7 +216,7 @@ const DoctorDashboardNewV2 = ({ userPermissions = [] }) => {
     }
   }, [activeSection, doctorId, token]);
 
-  const handleButtonClick = (section) => {
+  const handleSidebarClick = (section) => {
     setActiveSection(section);
   };
 
@@ -211,7 +255,8 @@ const DoctorDashboardNewV2 = ({ userPermissions = [] }) => {
     switch (activeSection) {
       case 'appointments':
         return (
-          <>
+          <Box>
+            <Typography variant="h5" fontWeight={700} mb={2} className="text-blue-700">Appointments</Typography>
             {loading ? (
               <CircularProgress />
             ) : error ? (
@@ -219,53 +264,53 @@ const DoctorDashboardNewV2 = ({ userPermissions = [] }) => {
             ) : appointments.length === 0 ? (
               <Typography>No appointments found.</Typography>
             ) : (
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Patient ID</TableCell>
-                    <TableCell>Start Time</TableCell>
-                    <TableCell>End Time</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Notes</TableCell>
-                    <TableCell>Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {appointments.map((appt) => (
-                    <TableRow key={appt._id}>
-                      <TableCell>{appt.patientId}</TableCell>
-                      <TableCell>{new Date(appt.startTime).toLocaleString()}</TableCell>
-                      <TableCell>{new Date(appt.endTime).toLocaleString()}</TableCell>
-                      <TableCell>{appt.status}</TableCell>
-                      <TableCell>{appt.notes}</TableCell>
-                      <TableCell>
-                        {appt.status === 'pending' && (
-                          <Button onClick={() => updateAppointmentStatus(appt._id, 'confirm')} variant="contained" color="primary">
-                            Confirm
-                          </Button>
-                        )}
-                        {appt.status === 'confirmed' && (
-                          <>
-                            <Button onClick={() => updateAppointmentStatus(appt._id, 'start')} variant="contained" color="secondary">
-                              Start
+              <Paper elevation={1} sx={{ overflowX: 'auto', mt: 2 }}>
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient ID</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Time</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Time</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {appointments.map((appt) => (
+                      <tr key={appt._id}>
+                        <td className="px-6 py-4 whitespace-nowrap">{appt.patientId}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{new Date(appt.startTime).toLocaleString()}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{new Date(appt.endTime).toLocaleString()}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{appt.status}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{appt.notes}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {appt.status === 'pending' && (
+                            <Button onClick={() => updateAppointmentStatus(appt._id, 'confirm')} variant="contained" color="primary" size="small" sx={{ mr: 1 }}>
+                              Confirm
                             </Button>
-                            <Button onClick={() => updateAppointmentStatus(appt._id, 'cancel', { reason: 'Cancelled by doctor' })} variant="outlined" color="error">
-                              Cancel
-                            </Button>
-                          </>
-                        )}
-                        {appt.status === 'confirmed' && (
-                          <Button onClick={() => updateAppointmentStatus(appt._id, 'complete', { notes: 'Completed successfully' })} variant="contained" color="success">
-                            Complete
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                          )}
+                          {appt.status === 'confirmed' && (
+                            <>
+                              <Button onClick={() => updateAppointmentStatus(appt._id, 'start')} variant="contained" color="secondary" size="small" sx={{ mr: 1 }}>
+                                Start
+                              </Button>
+                              <Button onClick={() => updateAppointmentStatus(appt._id, 'cancel', { reason: 'Cancelled by doctor' })} variant="outlined" color="error" size="small" sx={{ mr: 1 }}>
+                                Cancel
+                              </Button>
+                              <Button onClick={() => updateAppointmentStatus(appt._id, 'complete', { notes: 'Completed successfully' })} variant="contained" color="success" size="small">
+                                Complete
+                              </Button>
+                            </>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </Paper>
             )}
-          </>
+          </Box>
         );
       case 'profile':
         return profileLoading ? (
@@ -274,18 +319,19 @@ const DoctorDashboardNewV2 = ({ userPermissions = [] }) => {
           <Alert severity="error">{profileError}</Alert>
         ) : (
           <Box>
+            <Typography variant="h5" fontWeight={700} mb={2} className="text-blue-700">Profile</Typography>
             {renderProfileFields()}
             {editMode ? (
-              <>
+              <Stack direction="row" spacing={2} mt={2}>
                 <Button onClick={updateDoctorProfile} variant="contained" color="primary">
                   Save
                 </Button>
                 <Button onClick={() => setEditMode(false)} variant="outlined" color="secondary">
                   Cancel
                 </Button>
-              </>
+              </Stack>
             ) : (
-              <Button onClick={() => setEditMode(true)} variant="contained" color="primary">
+              <Button onClick={() => setEditMode(true)} variant="contained" color="primary" sx={{ mt: 2 }}>
                 Edit
               </Button>
             )}
@@ -296,48 +342,96 @@ const DoctorDashboardNewV2 = ({ userPermissions = [] }) => {
       case 'prescriptions':
         return <PrescriptionManagement />;
       case 'transactions':
-        return <Transactions />;
+        return <DoctorTransactions doctorId={doctorId} />;
       default:
         return <Typography variant="h6">Welcome to the Doctor Dashboard</Typography>;
     }
   };
 
   return (
-    <Box className="dashboard-container">
-      <Paper className="sidebar" elevation={3}>
-        <Typography variant="h5" className="sidebar-title">Doctor Dashboard</Typography>
-        <Button fullWidth onClick={() => handleButtonClick('appointments')} className="sidebar-button">
-          Appointments
-        </Button>
-        <Button fullWidth onClick={() => handleButtonClick('profile')} className="sidebar-button">
-          Profile
-        </Button>
-        <Button fullWidth onClick={() => handleButtonClick('schedule')} className="sidebar-button">
-          Schedule Management
-        </Button>
-        <Button fullWidth onClick={() => handleButtonClick('prescriptions')} className="sidebar-button">
-          Prescriptions
-        </Button>
-        <Button fullWidth onClick={() => handleButtonClick('transactions')} className="sidebar-button">
-          Transactions
-        </Button>
-        <Button
-          fullWidth
-          variant="contained"
-          color="error"
-          onClick={() => {
-            localStorage.removeItem('token');
-            window.location.href = '/login';
-          }}
-          className="sidebar-button"
-          sx={{ mt: 2 }}
-        >
-          Sign Out
-        </Button>
-      </Paper>
-      <Box className="content">
-        {renderContent()}
+    <Box sx={{ display: 'flex', minHeight: '100vh', background: 'linear-gradient(120deg, #f4f7fa 0%, #e9eafc 100%)' }}>
+      {/* Sidebar */}
+      <Drawer
+        variant="permanent"
+        sx={{
+          width: 260,
+          flexShrink: 0,
+          [`& .MuiDrawer-paper`]: {
+            width: 260,
+            boxSizing: 'border-box',
+            background: '#fff',
+            borderRight: '1px solid #e0e0e0',
+            p: 0,
+          },
+        }}
+      >
+        <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+          <Avatar sx={{ width: 64, height: 64, mb: 1, bgcolor: 'primary.main' }}>{doctorUser.name[0]}</Avatar>
+          <Typography variant="h6" fontWeight={700} sx={{ mb: 0.5 }}>Doctor Dashboard</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{doctorUser.email}</Typography>
+        </Box>
+        <Divider />
+        <List sx={{ mt: 1 }}>
+          {sidebarItems.map((item) => (
+            <ListItem
+              button
+              key={item.key}
+              selected={activeSection === item.key}
+              onClick={() => handleSidebarClick(item.key)}
+              sx={{
+                borderRadius: 2,
+                mb: 0.5,
+                mx: 1,
+                color: activeSection === item.key ? 'primary.main' : 'text.primary',
+                backgroundColor: activeSection === item.key ? 'rgba(25, 118, 210, 0.08)' : 'transparent',
+                '&:hover': {
+                  backgroundColor: 'rgba(25, 118, 210, 0.12)',
+                },
+              }}
+            >
+              <ListItemIcon sx={{ color: 'inherit' }}>{item.icon}</ListItemIcon>
+              <ListItemText primary={item.label} />
+            </ListItem>
+          ))}
+        </List>
+        <Box sx={{ flexGrow: 1 }} />
+        <Box sx={{ p: 2 }}>
+          <Button
+            fullWidth
+            variant="contained"
+            color="error"
+            startIcon={<Logout />}
+            onClick={() => {
+              localStorage.removeItem('token');
+              window.location.href = '/login';
+            }}
+            sx={{ borderRadius: 2, fontWeight: 600 }}
+          >
+            Sign Out
+          </Button>
+        </Box>
+      </Drawer>
+      {/* Main Content */}
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        {/* Top Bar */}
+        <AppBar position="static" elevation={0} sx={{ background: 'transparent', boxShadow: 'none', p: 0 }}>
+          <Toolbar sx={{ justifyContent: 'flex-end', minHeight: 64 }}>
+            <Stack direction="row" spacing={2} alignItems="center">
+              <Typography variant="body1" color="text.primary">
+                {doctorUser.name}
+              </Typography>
+              <Avatar sx={{ width: 36, height: 36, bgcolor: 'primary.main' }}>{doctorUser.name[0]}</Avatar>
+            </Stack>
+          </Toolbar>
+        </AppBar>
+        {/* Content Area */}
+        <Box sx={{ flex: 1, p: { xs: 2, md: 4 }, background: 'none' }}>
+          <Paper elevation={2} sx={{ p: { xs: 2, md: 4 }, borderRadius: 3, minHeight: 400, boxShadow: '0 4px 24px rgba(25, 118, 210, 0.06)' }}>
+            {renderContent()}
+          </Paper>
+        </Box>
       </Box>
+      {/* Snackbar for feedback */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={3000}
